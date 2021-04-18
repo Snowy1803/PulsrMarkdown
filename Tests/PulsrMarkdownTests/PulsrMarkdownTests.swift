@@ -1,7 +1,7 @@
     import XCTest
     @testable import PulsrMarkdown
 
-    final class SimpleMarkdownTests: XCTestCase {
+    final class PulsrMarkdownTests: XCTestCase {
         func testStrings() {
             let g = MarkdownGenerator.default
             XCTAssertEqual(g.generate(string: "This is **bold**, *italic* and *crossed **like this* Hehe**").string, "This is bold, italic and crossed like this Hehe")

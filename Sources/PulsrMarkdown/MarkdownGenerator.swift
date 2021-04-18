@@ -168,17 +168,17 @@ public extension MarkdownGenerator {
 
 public extension NSAttributedString.Key {
     /// Used internally for spoilers. do not set.
-    static let tappableAttributeID = Self("__SimpleMarkdown_tappableAttributeID")
+    static let tappableAttributeID = Self("__PulsrMarkdown_tappableAttributeID")
     /// Inset color, no inset (nil) by default
-    static let insetColor = Self("__SimpleMarkdown_insetColor")
+    static let insetColor = Self("__PulsrMarkdown_insetColor")
     /// UIFont.Weight, regular by default
-    static let fontWeight = Self("__SimpleMarkdown_fontWeight")
+    static let fontWeight = Self("__PulsrMarkdown_fontWeight")
     /// Bool, false by default
-    static let monospaced = Self("__SimpleMarkdown_monospaced")
+    static let monospaced = Self("__PulsrMarkdown_monospaced")
     /// UIFont.TextStyle, body by default
-    static let textStyle = Self("__SimpleMarkdown_textStyle")
+    static let textStyle = Self("__PulsrMarkdown_textStyle")
     /// CGFloat, 17 (body) by default
-    static let fontSize = Self("__SimpleMarkdown_fontSize")
+    static let fontSize = Self("__PulsrMarkdown_fontSize")
 }
 
 internal extension MarkdownGenerator {
