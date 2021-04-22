@@ -77,8 +77,8 @@ public struct MarkdownGenerator {
                 }
             }
         } else if let start = findLocation(of: rule.open, in: string, excluding: excluding, pos: &pos) {
-            let nextNewline = string.range(of: "\n", range: NSRange(location: start.upperBound, length: string.length - start.upperBound))
-            if let stop = findLocation(of: rule.close, in: string, excluding: excluding, pos: &pos, until: nextNewline.lowerBound, raw: rule.raw),
+            let nextNewline = rule.multiline ? NSNotFound : string.range(of: "\n", range: NSRange(location: start.upperBound, length: string.length - start.upperBound)).lowerBound
+            if let stop = findLocation(of: rule.close, in: string, excluding: excluding, pos: &pos, until: nextNewline, raw: rule.raw),
                start.upperBound != stop.lowerBound {
                 // yay
                 let range = NSRange(location: start.upperBound, length: stop.lowerBound - start.upperBound)
@@ -155,9 +155,11 @@ public extension Array where Element == MarkdownRule {
 
 public extension MarkdownGenerator {
     // May change without warning
-    static let `default` = MarkdownGenerator(rules: .headers + [.blockquoteUntilEnd, .blockquote] + .basicInlines + [.spoilerReddit, .warning])
+    static let `default` = MarkdownGenerator(rules: .headers + [.blockquoteUntilEnd, .blockquote, .codeblock] + .basicInlines + [.spoilerReddit, .warning])
     // Just missing codeblocks
-    static let discord = MarkdownGenerator(rules: [.blockquoteUntilEnd, .blockquote] + .basicInlines + [.spoilerDiscord])
+    static let discord = MarkdownGenerator(rules: [.blockquoteUntilEnd, .blockquote, .codeblock] + .basicInlines + [.spoilerDiscord])
+    
+    static let pulsr = MarkdownGenerator(rules: .headers + [.blockquoteUntilEnd, .blockquote, .codeblock] + .basicInlines + [.spoilerDiscord])
     
     func keepingSpecifiers() -> Self {
         var copy = self

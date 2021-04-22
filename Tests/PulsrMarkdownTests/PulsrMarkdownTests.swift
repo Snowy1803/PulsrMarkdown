@@ -10,5 +10,8 @@
             XCTAssertEqual(g.generate(string: "This is `invalid").string, "This is `invalid")
             XCTAssertEqual(g.generate(string: "Hello this <<does nothing>> ok?").string, "Hello this <<does nothing>> ok?")
             XCTAssertEqual(g.generate(string: "> This is a quote\nThis isn't").string, "This is a quote\nThis isn't")
+            XCTAssertEqual(g.generate(string: "`This will not\nbe parsed`").string, "`This will not\nbe parsed`")
+            XCTAssertEqual(g.generate(string: "This will not``\n``be parsed").string, "This will not``\n``be parsed")
+            XCTAssertEqual(g.generate(string: "```This will \nbe parsed```").string, "This will \nbe parsed")
         }
     }

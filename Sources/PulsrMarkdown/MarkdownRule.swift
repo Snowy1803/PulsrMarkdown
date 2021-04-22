@@ -19,13 +19,16 @@ public struct MarkdownRule {
     public var tappedAttributes: [NSAttributedString.Key: Any]?
     /// if true, the content isn't parsed for markdown. the rule must be in the first in the list. this also disables the '\' escape for the close tag.
     public var raw: Bool = false
+    /// if true, the parser looks for the closing tag further than the end of the current line
+    public var multiline: Bool = false
     
-    public init(open: String, close: String, attributes: [NSAttributedString.Key : Any], tappedAttributes: [NSAttributedString.Key : Any]? = nil, raw: Bool = false) {
+    public init(open: String, close: String, attributes: [NSAttributedString.Key : Any], tappedAttributes: [NSAttributedString.Key : Any]? = nil, raw: Bool = false, multiline: Bool = false) {
         self.open = open
         self.close = close
         self.attributes = attributes
         self.tappedAttributes = tappedAttributes
         self.raw = raw
+        self.multiline = multiline
     }
 }
 
@@ -83,6 +86,13 @@ public extension MarkdownRule {
         close: "``",
         attributes: .inlineCode,
         raw: true
+    )
+    static let codeblock = MarkdownRule(
+        open: "```",
+        close: "```",
+        attributes: .inlineCode,
+        raw: true,
+        multiline: true
     )
     static let blockquote = MarkdownRule(
         open: "> ",
