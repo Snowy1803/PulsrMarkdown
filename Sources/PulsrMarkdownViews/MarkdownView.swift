@@ -78,27 +78,31 @@ open class MarkdownView: UITextView {
     
     /// Toggles the given inline markdown rule for the selected text
     public func toggleRule(_ rule: MarkdownRule) {
+        toggleRule(open: rule.open, close: rule.close, openCheck: rule.open, closeCheck: rule.close)
+    }
+    
+    internal func toggleRule(open: String, close: String, openCheck: String, closeCheck: String) {
         let text = self.text as NSString
         let upper = selectedRange.upperBound
         let lower = selectedRange.lowerBound
         
-        let closeRange = NSRange(location: upper, length: (rule.close as NSString).length)
+        let closeRange = NSRange(location: upper, length: (closeCheck as NSString).length)
         if closeRange.upperBound <= text.length,
-           text.substring(with: closeRange) == rule.close {
+           text.substring(with: closeRange) == closeCheck {
             textStorage.replaceCharacters(in: closeRange, with: "") // already there, remove
         } else {
-            textStorage.replaceCharacters(in: NSRange(location: upper, length: 0), with: rule.close)
+            textStorage.replaceCharacters(in: NSRange(location: upper, length: 0), with: close)
         }
         
-        let openLen = (rule.open as NSString).length
-        let openRange = NSRange(location: lower - openLen, length: openLen)
+        let openCheckLen = (openCheck as NSString).length
+        let openRange = NSRange(location: lower - openCheckLen, length: openCheckLen)
         if openRange.location >= 0,
-           text.substring(with: openRange) == rule.open {
+           text.substring(with: openRange) == openCheck {
             textStorage.replaceCharacters(in: openRange, with: "") // already there, remove
-            selectedRange = NSRange(location: lower - openLen, length: upper - lower)
+            selectedRange = NSRange(location: lower - openCheckLen, length: upper - lower)
         } else {
-            textStorage.replaceCharacters(in: NSRange(location: lower, length: 0), with: rule.open)
-            selectedRange = NSRange(location: lower + openLen, length: upper - lower)
+            textStorage.replaceCharacters(in: NSRange(location: lower, length: 0), with: open)
+            selectedRange = NSRange(location: lower + (open as NSString).length, length: upper - lower)
         }
         
         markdown = self.text
@@ -142,6 +146,10 @@ extension MarkdownView {
     
     @objc open func toggleSpoilerReddit(_ sender: Any?) {
         toggleRule(.spoilerDiscord)
+    }
+    
+    @objc open func cycleCodeStyle(_ sender: Any?) {
+        toggleRule(open: "`", close: "`", openCheck: "```", closeCheck: "```")
     }
 }
 
