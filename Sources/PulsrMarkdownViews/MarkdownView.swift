@@ -76,7 +76,8 @@ open class MarkdownView: UITextView {
         }
     }
     
-    /// Toggles the given inline markdown rule for the selected text
+    /// Toggles the given markdown rule for the selected text
+    /// If multiple lines are selected, this will currently not toggle the inline rule for each line
     public func toggleRule(_ rule: MarkdownRule) {
         let close = rule.close == "\n" ? "" : rule.close
         toggleRule(open: rule.open, close: close, openCheck: rule.open, closeCheck: close, block: close.isEmpty)
@@ -150,6 +151,8 @@ extension MarkdownView {
         toggleRule(.spoilerDiscord)
     }
     
+    /// Cycles between .code1, .code2, codeblock, and nothing
+    /// If the selection is multiple lines, it will just toggle codeblock
     @objc open func cycleCodeStyle(_ sender: Any?) {
         if let range = selectedTextRange,
            text(in: range)?.contains("\n") ?? false {
@@ -159,19 +162,19 @@ extension MarkdownView {
         }
     }
     
-    @objc func toggleBlockquote(_ sender: Any?) {
+    @objc open func toggleBlockquote(_ sender: Any?) {
         toggleRule(.blockquote)
     }
     
-    @objc func toggleTitle1(_ sender: Any?) {
+    @objc open func toggleTitle1(_ sender: Any?) {
         toggleRule(.header1)
     }
     
-    @objc func toggleTitle2(_ sender: Any?) {
+    @objc open func toggleTitle2(_ sender: Any?) {
         toggleRule(.header2)
     }
     
-    @objc func toggleTitle3(_ sender: Any?) {
+    @objc open func toggleTitle3(_ sender: Any?) {
         toggleRule(.header3)
     }
 }
