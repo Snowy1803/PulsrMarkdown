@@ -72,6 +72,73 @@ open class MarkdownView: UITextView {
             }
         }
     }
+    
+    public func toggleRule(_ rule: MarkdownRule) {
+        let text = self.text as NSString
+        let upper = selectedRange.upperBound
+        let lower = selectedRange.lowerBound
+        
+        let closeRange = NSRange(location: upper, length: (rule.close as NSString).length)
+        if closeRange.upperBound <= text.length,
+           text.substring(with: closeRange) == rule.close {
+            textStorage.replaceCharacters(in: closeRange, with: "") // already there, remove
+        } else {
+            textStorage.replaceCharacters(in: NSRange(location: upper, length: 0), with: rule.close)
+        }
+        
+        let openLen = (rule.open as NSString).length
+        let openRange = NSRange(location: lower - openLen, length: openLen)
+        if openRange.location >= 0,
+           text.substring(with: openRange) == rule.open {
+            textStorage.replaceCharacters(in: openRange, with: "") // already there, remove
+            selectedRange = NSRange(location: lower - openLen, length: upper - lower)
+        } else {
+            textStorage.replaceCharacters(in: NSRange(location: lower, length: 0), with: rule.open)
+            selectedRange = NSRange(location: lower + openLen, length: upper - lower)
+        }
+        
+        markdown = self.text
+    }
+    
+    open override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
+        let controller = UIMenuController.shared
+        if action == #selector(toggleBoldface),
+           controller.menuItems?.contains(where: { $0.action == action }) ?? false {
+            controller.menuItems?.append(contentsOf: additionalFormatingOptions)
+        }
+        return super.canPerformAction(action, withSender: sender)
+    }
+    
+    /// None by default. Override to add additional rules, such as Strikethrough and Spoiler
+    open var additionalFormatingOptions: [UIMenuItem] {
+        []
+    }
+}
+
+extension MarkdownView {
+    open override func toggleItalics(_ sender: Any?) {
+        toggleRule(.italicAsterisk)
+    }
+    
+    open override func toggleBoldface(_ sender: Any?) {
+        toggleRule(.bold)
+    }
+    
+    open override func toggleUnderline(_ sender: Any?) {
+        toggleRule(.underline)
+    }
+    
+    @objc open func toggleStrikethrough(_ sender: Any?) {
+        toggleRule(.striketrough)
+    }
+    
+    @objc open func toggleSpoilerDiscord(_ sender: Any?) {
+        toggleRule(.spoilerDiscord)
+    }
+    
+    @objc open func toggleSpoilerReddit(_ sender: Any?) {
+        toggleRule(.spoilerDiscord)
+    }
 }
 
 internal class CustomDrawingView: UIView {
