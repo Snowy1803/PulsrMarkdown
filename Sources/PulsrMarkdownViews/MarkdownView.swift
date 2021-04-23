@@ -78,10 +78,11 @@ open class MarkdownView: UITextView {
     
     /// Toggles the given inline markdown rule for the selected text
     public func toggleRule(_ rule: MarkdownRule) {
-        toggleRule(open: rule.open, close: rule.close, openCheck: rule.open, closeCheck: rule.close)
+        let close = rule.close == "\n" ? "" : rule.close
+        toggleRule(open: rule.open, close: close, openCheck: rule.open, closeCheck: close, block: close.isEmpty)
     }
     
-    internal func toggleRule(open: String, close: String, openCheck: String, closeCheck: String) {
+    internal func toggleRule(open: String, close: String, openCheck: String, closeCheck: String, block: Bool) {
         let text = self.text as NSString
         let upper = selectedRange.upperBound
         let lower = selectedRange.lowerBound
@@ -95,13 +96,14 @@ open class MarkdownView: UITextView {
         }
         
         let openCheckLen = (openCheck as NSString).length
-        let openRange = NSRange(location: lower - openCheckLen, length: openCheckLen)
+        let lineStart = block ? text.lineRange(for: selectedRange).location : 0 // unused var if !block so don't bother
+        let openRange = NSRange(location: block ? lineStart : lower - openCheckLen, length: openCheckLen)
         if openRange.location >= 0,
            text.substring(with: openRange) == openCheck {
             textStorage.replaceCharacters(in: openRange, with: "") // already there, remove
             selectedRange = NSRange(location: lower - openCheckLen, length: upper - lower)
         } else {
-            textStorage.replaceCharacters(in: NSRange(location: lower, length: 0), with: open)
+            textStorage.replaceCharacters(in: NSRange(location: block ? lineStart : lower, length: 0), with: open)
             selectedRange = NSRange(location: lower + (open as NSString).length, length: upper - lower)
         }
         
@@ -149,7 +151,28 @@ extension MarkdownView {
     }
     
     @objc open func cycleCodeStyle(_ sender: Any?) {
-        toggleRule(open: "`", close: "`", openCheck: "```", closeCheck: "```")
+        if let range = selectedTextRange,
+           text(in: range)?.contains("\n") ?? false {
+            toggleRule(.codeblock) // always use the multiline version if selecting multiple lines
+        } else {
+            toggleRule(open: "`", close: "`", openCheck: "```", closeCheck: "```", block: false) // otherwise, cycle through all versions
+        }
+    }
+    
+    @objc func toggleBlockquote(_ sender: Any?) {
+        toggleRule(.blockquote)
+    }
+    
+    @objc func toggleTitle1(_ sender: Any?) {
+        toggleRule(.header1)
+    }
+    
+    @objc func toggleTitle2(_ sender: Any?) {
+        toggleRule(.header2)
+    }
+    
+    @objc func toggleTitle3(_ sender: Any?) {
+        toggleRule(.header3)
     }
 }
 
