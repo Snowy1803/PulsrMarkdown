@@ -48,15 +48,18 @@ open class MarkdownView: UITextView {
         fatalError("init(coder:) has not been implemented")
     }
     
+    /// Updates the markdown. Do not call directly, change the `markdown` property to trigger it.
     open func updateMarkdown() {
         attributedText = generator.generate(string: markdown)
         customDrawing.setNeedsDisplay()
     }
     
+    /// Draws the custom overlay over the text. Currently only calls `drawInsetColor`
     open func drawCustomOverlay() {
         drawInsetColor()
     }
     
+    /// Draws the blockquote inset. Override it to do nothing to disable
     open func drawInsetColor() {
         attributedText.enumerateAttributes(in: NSRange(location: 0, length: (attributedText.string as NSString).length), options: []) { attributes, range, stop in
             if let insetColor = attributes[.insetColor] as? UIColor {
@@ -73,6 +76,7 @@ open class MarkdownView: UITextView {
         }
     }
     
+    /// Toggles the given inline markdown rule for the selected text
     public func toggleRule(_ rule: MarkdownRule) {
         let text = self.text as NSString
         let upper = selectedRange.upperBound
@@ -104,13 +108,13 @@ open class MarkdownView: UITextView {
         let controller = UIMenuController.shared
         if action == #selector(toggleBoldface),
            controller.menuItems?.contains(where: { $0.action == action }) ?? false {
-            controller.menuItems?.append(contentsOf: additionalFormatingOptions)
+            controller.menuItems?.append(contentsOf: additionalFormattingOptions)
         }
         return super.canPerformAction(action, withSender: sender)
     }
     
     /// None by default. Override to add additional rules, such as Strikethrough and Spoiler
-    open var additionalFormatingOptions: [UIMenuItem] {
+    open var additionalFormattingOptions: [UIMenuItem] {
         []
     }
 }
