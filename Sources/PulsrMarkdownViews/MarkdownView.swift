@@ -99,7 +99,7 @@ open class MarkdownView: UITextView {
         let openCheckLen = (openCheck as NSString).length
         let lineStart = block ? text.lineRange(for: selectedRange).location : 0 // unused var if !block so don't bother
         let openRange = NSRange(location: block ? lineStart : lower - openCheckLen, length: openCheckLen)
-        if openRange.location >= 0,
+        if block ? openRange.upperBound <= text.length : openRange.location >= 0,
            text.substring(with: openRange) == openCheck {
             textStorage.replaceCharacters(in: openRange, with: "") // already there, remove
             selectedRange = NSRange(location: lower - openCheckLen, length: upper - lower)
