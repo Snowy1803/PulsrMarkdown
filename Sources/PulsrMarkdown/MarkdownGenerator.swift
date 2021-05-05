@@ -16,7 +16,7 @@ public struct MarkdownGenerator {
     public init(
         rules: [MarkdownRule],
         keepSpecifiers: Bool = false,
-        specifierAttributes: [NSAttributedString.Key : Any] = [.foregroundColor: UIColor.secondaryLabel, .fontWeight: UIFont.Weight.regular, .obliqueness: 0, .underlineStyle: 0, .strikethroughStyle: 0]) {
+        specifierAttributes: [NSAttributedString.Key : Any] = [.foregroundColor: UIColor._markdownSpecifierForeground, .fontWeight: UIFont.Weight.regular, .obliqueness: 0, .underlineStyle: 0, .strikethroughStyle: 0]) {
         self.rules = rules
         self.keepSpecifiers = keepSpecifiers
         self.specifierAttributes = specifierAttributes
