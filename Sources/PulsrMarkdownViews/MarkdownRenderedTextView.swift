@@ -8,7 +8,7 @@
 import UIKit
 import PulsrMarkdown
 
-open class MarkdownRenderedTextView: MarkdownView {
+open class MarkdownRenderedTextView: MarkdownView, UIGestureRecognizerDelegate {
     
     public var revealed: Set<Int> = []
     
@@ -18,6 +18,8 @@ open class MarkdownRenderedTextView: MarkdownView {
         allowsEditingTextAttributes = true
         
         let tap = UITapGestureRecognizer(target: self, action: #selector(didTapRender))
+        tap.cancelsTouchesInView = false // doesn't do anything...
+        tap.delegate = self
         addGestureRecognizer(tap)
     }
     
@@ -44,5 +46,9 @@ open class MarkdownRenderedTextView: MarkdownView {
     
     open override func generateAttributedText() -> NSAttributedString {
         generator.generate(string: markdown, tappedIds: revealed)
+    }
+    
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        return true // opening links and revealing spoilers should both work
     }
 }
