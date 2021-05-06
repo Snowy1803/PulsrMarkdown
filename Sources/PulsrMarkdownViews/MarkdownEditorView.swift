@@ -26,7 +26,7 @@ open class MarkdownEditorView: MarkdownView {
     
     open override func updateMarkdown() {
         let range = selectedRange
-        attributedText = generator.generate(string: markdown)
+        super.updateMarkdown()
         selectedRange = range // avoid jumping, we know only attributes changed
     }
     

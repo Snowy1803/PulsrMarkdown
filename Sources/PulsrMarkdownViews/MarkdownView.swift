@@ -50,8 +50,12 @@ open class MarkdownView: UITextView {
     
     /// Updates the markdown. Do not call directly, change the `markdown` property to trigger it.
     open func updateMarkdown() {
-        attributedText = generator.generate(string: markdown)
+        attributedText = generateAttributedText()
         customDrawing.setNeedsDisplay()
+    }
+    
+    open func generateAttributedText() -> NSAttributedString {
+        generator.generate(string: markdown)
     }
     
     /// Draws the custom overlay over the text. Currently only calls `drawInsetColor`

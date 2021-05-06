@@ -22,7 +22,7 @@ public struct MarkdownGenerator {
         self.specifierAttributes = specifierAttributes
     }
     
-    public func generate(string: String, tappedIds: Set<Int>? = nil) -> NSAttributedString {
+    public func generate(string: String, tappedIds: Set<Int>? = nil) -> NSMutableAttributedString {
         let str = NSMutableAttributedString(string: string, attributes: [.foregroundColor: UIColor.label])
         var excluded: [ExcludedRange] = []
         var ids: Int = 0

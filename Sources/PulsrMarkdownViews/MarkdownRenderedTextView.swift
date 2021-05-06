@@ -42,8 +42,7 @@ open class MarkdownRenderedTextView: MarkdownView {
         }
     }
     
-    override open func updateMarkdown() {
-        attributedText = generator.generate(string: markdown, tappedIds: revealed)
-        customDrawing.setNeedsDisplay()
+    open override func generateAttributedText() -> NSAttributedString {
+        generator.generate(string: markdown, tappedIds: revealed)
     }
 }
