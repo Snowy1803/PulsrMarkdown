@@ -36,6 +36,9 @@ open class MarkdownRenderedTextView: MarkdownView, UIGestureRecognizerDelegate {
         }
         becomeFirstResponder()
         let pos = offset(from: beginningOfDocument, to: position)
+        guard pos != NSNotFound else {
+            return // why does that happen?? closestPosition(to:) is nillable yet it returns a wrapped NSNotFound
+        }
         if let id = attributedText.attribute(.tappableAttributeID, at: pos, effectiveRange: nil) as? Int {
             revealed.insert(id)
             UIView.transition(with: self, duration: 0.3, options: .transitionCrossDissolve, animations: { [self] in
