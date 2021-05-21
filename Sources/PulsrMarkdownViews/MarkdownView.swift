@@ -84,32 +84,86 @@ open class MarkdownView: UITextView {
     /// If multiple lines are selected, this will currently not toggle the inline rule for each line
     public func toggleRule(_ rule: MarkdownRule) {
         let close = rule.close == "\n" ? "" : rule.close
-        toggleRule(open: rule.open, close: close, openCheck: rule.open, closeCheck: close, block: close.isEmpty)
+        if rule.multiline || selectedRange.length == 0 {
+            toggleRuleSingleLine(open: rule.open, close: close, openCheck: rule.open, closeCheck: close, block: close.isEmpty)
+        } else {
+            toggleRuleForEachLine(open: rule.open, close: close, openCheck: rule.open, closeCheck: close, block: close.isEmpty)
+        }
     }
     
-    internal func toggleRule(open: String, close: String, openCheck: String, closeCheck: String, block: Bool) {
+    internal func toggleRuleSingleLine(open: String, close: String, openCheck: String, closeCheck: String, block: Bool) {
+        var inserted = 0
+        var ignore = 0
+        let range = selectedRange
+        toggleRule(open: open, close: close, openCheck: openCheck, closeCheck: closeCheck, block: block, range: range, insertedCharsAtStart: &inserted, insertedCharsAtEnd: &ignore)
+        selectedRange = NSRange(location: range.location + inserted, length: range.length)
+    }
+    
+    /// Toggles the given rule for each line in this view's text
+    /// - Parameters:
+    ///   - open: the leading specifier
+    ///   - close: the trailing specifier
+    ///   - openCheck: the leading specifier to check for existence
+    ///   - closeCheck: the trailing specifier to check for existence
+    ///   - block: true if this rule is a block (happens per line), false otherwise
+    internal func toggleRuleForEachLine(open: String, close: String, openCheck: String, closeCheck: String, block: Bool) {
+        let text = self.text as NSString // before changes
+        let range = selectedRange
+        var insertedBefore = 0 // may be negative
+        var insertedAtEnd = 0 // same
+        text.enumerateSubstrings(in: range, options: [.byLines, .reverse]) { [self] substr, range, around, stop in
+            var insertedAtStart = 0
+            toggleRule(open: open, close: close, openCheck: openCheck, closeCheck: closeCheck, block: block, range: range, insertedCharsAtStart: &insertedAtStart, insertedCharsAtEnd: &insertedAtEnd)
+            if insertedBefore == 0 {
+                insertedBefore = insertedAtStart
+            }
+        }
+        // black magic
+        selectedRange = NSRange(location: range.location + insertedBefore, length: self.textStorage.length - insertedBefore - text.length + range.length - insertedAtEnd)
+    }
+    
+    /// Toggles the given rule for the given range in this view's text
+    /// - Parameters:
+    ///   - open: the leading specifier
+    ///   - close: the trailing specifier
+    ///   - openCheck: the leading specifier to check for existence
+    ///   - closeCheck: the trailing specifier to check for existence
+    ///   - block: true if this rule is a block (happens per line), false otherwise
+    ///   - range: the range in which to apply the rule
+    ///   - insertedCharsAtStart: will be set to the number of inserted characters before the leading specifier (negative if it was removed)
+    ///   - insertedCharsAtEnd: will be set to the number of inserted characters after the trailing specifier (negative if it was removed)
+    internal func toggleRule(open: String, close: String, openCheck: String, closeCheck: String, block: Bool, range: NSRange, insertedCharsAtStart: inout Int, insertedCharsAtEnd: inout Int) {
         let text = self.text as NSString
-        let upper = selectedRange.upperBound
-        let lower = selectedRange.lowerBound
+        let upper = range.upperBound
+        let lower = range.lowerBound
         
-        let closeRange = NSRange(location: upper, length: (closeCheck as NSString).length)
+        // if we find newlines around, allow to use specifiers inside the range instead of around (multiline selection)
+        let includeStart = range.lowerBound >= 1 && text.character(at: range.lowerBound - 1) == 10
+        let includeEnd = range.upperBound < text.length && text.character(at: range.upperBound) == 10
+        
+        // - Trailing specifier
+        let closeCheckLen = (closeCheck as NSString).length
+        let closeRange = NSRange(location: upper - (includeEnd ? closeCheckLen : 0), length: closeCheckLen)
         if closeRange.upperBound <= text.length,
            text.substring(with: closeRange) == closeCheck {
             textStorage.replaceCharacters(in: closeRange, with: "") // already there, remove
+            insertedCharsAtEnd = -closeRange.length
         } else {
             textStorage.replaceCharacters(in: NSRange(location: upper, length: 0), with: close)
+            insertedCharsAtEnd = (close as NSString).length
         }
         
+        // - Leading specifier
         let openCheckLen = (openCheck as NSString).length
-        let lineStart = block ? text.lineRange(for: selectedRange).location : 0 // unused var if !block so don't bother
-        let openRange = NSRange(location: block ? lineStart : lower - openCheckLen, length: openCheckLen)
+        let lineStart = block ? text.lineRange(for: range).location : 0 // unused var if !block so don't bother
+        let openRange = NSRange(location: block ? lineStart : includeStart ? lower : lower - openCheckLen, length: openCheckLen)
         if block ? openRange.upperBound <= text.length : openRange.location >= 0,
            text.substring(with: openRange) == openCheck {
             textStorage.replaceCharacters(in: openRange, with: "") // already there, remove
-            selectedRange = NSRange(location: lower - openCheckLen, length: upper - lower)
+            insertedCharsAtStart = -openRange.length
         } else {
             textStorage.replaceCharacters(in: NSRange(location: block ? lineStart : lower, length: 0), with: open)
-            selectedRange = NSRange(location: lower + (open as NSString).length, length: upper - lower)
+            insertedCharsAtStart = (open as NSString).length
         }
         
         markdown = self.text
@@ -162,7 +216,7 @@ extension MarkdownView {
            text(in: range)?.contains("\n") ?? false {
             toggleRule(.codeblock) // always use the multiline version if selecting multiple lines
         } else {
-            toggleRule(open: "`", close: "`", openCheck: "```", closeCheck: "```", block: false) // otherwise, cycle through all versions
+            toggleRuleSingleLine(open: "`", close: "`", openCheck: "```", closeCheck: "```", block: false) // otherwise, cycle through all versions
         }
     }
     
