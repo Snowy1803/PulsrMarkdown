@@ -9,8 +9,13 @@ import Foundation
 import UIKit
 
 public struct MarkdownGenerator {
+    /// The set of rules to apply. The given attributes will be applied when their specifiers are encountered.
     public var rules: [MarkdownRule]
+    
+    /// Set to true to keep the specifiers (and give them the attributes in `specifierAttributes`), false to remove them
     public var keepSpecifiers: Bool
+    
+    /// The attributes to give specifiers (such as `**`), if `keepSpecifiers` is true.
     public var specifierAttributes: [NSAttributedString.Key: Any]
     
     public init(
@@ -22,6 +27,11 @@ public struct MarkdownGenerator {
         self.specifierAttributes = specifierAttributes
     }
     
+    /// Generates an NSAttributedString with parsed markdown according to this generator's options.
+    /// - Parameters:
+    ///   - string: the string to parse
+    ///   - tappedIds: if nil, all spoilers will be revealed. Otherwise, it is a set that contains the IDs of the spoilers that have been revealed. You can find the ID of a spoiler using the `tappableAttributeID` attribute on a previously returned attributed string
+    /// - Returns: the output markdown
     public func generate(string: String, tappedIds: Set<Int>? = nil) -> NSMutableAttributedString {
         let str = NSMutableAttributedString(string: string, attributes: [.foregroundColor: UIColor.label])
         var excluded: [ExcludedRange] = []
@@ -154,13 +164,16 @@ public extension Array where Element == MarkdownRule {
 }
 
 public extension MarkdownGenerator {
-    // May change without warning
+    /// The default set of rules. May change without warning. Do not rely on it, make your own with your needs.
     static let `default` = MarkdownGenerator(rules: .headers + [.blockquoteUntilEnd, .blockquote, .codeblock] + .basicInlines + [.spoilerReddit, .warning])
-    // Just missing codeblocks
+    
+    /// The discord set of rules. The parser isn't completely compatible however, and the codeblocks is missing language header support.
     static let discord = MarkdownGenerator(rules: [.blockquoteUntilEnd, .blockquote, .codeblock] + .basicInlines + [.spoilerDiscord])
     
+    /// A stable and reasonable set of rules.
     static let pulsr = MarkdownGenerator(rules: .headers + [.blockquoteUntilEnd, .blockquote, .codeblock] + .basicInlines + [.spoilerDiscord])
     
+    /// Returns a copy of self with `keepSpecifiers` set to true
     func keepingSpecifiers() -> Self {
         var copy = self
         copy.keepSpecifiers = true
